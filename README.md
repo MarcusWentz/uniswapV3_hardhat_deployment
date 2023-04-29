@@ -11,3 +11,7 @@ Deploy Pool:
 ```shell
 npx hardhat run --network sepolia scripts/deployPool.js
 ```
+Pool Add Liquidity:
+```shell
+npx hardhat run --network sepolia scripts/poolAddLiquidity.js
+```
