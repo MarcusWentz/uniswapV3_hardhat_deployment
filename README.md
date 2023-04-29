@@ -1,9 +1,13 @@
 # uniswapV3_hardhat_deployment
 
 Based on:
-https://www.youtube.com/watch?v=0rQo4tODpxI
+https://www.youtube.com/watch?v=SeiaiiviEhM
 
-Deploy command:
+Deploy Start:
 ```shell
-npx hardhat run --network sepolia scripts/deploy.js
+npx hardhat run --network sepolia scripts/deployStart.js
+```
+Deploy Pool:
+```shell
+npx hardhat run --network sepolia scripts/deployPool.js
 ```
