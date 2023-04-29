@@ -1,37 +1,5 @@
-const { ethers } = require("hardhat");
-const waffle = require("@nomiclabs/hardhat-waffle");
-const {Contract, ContractFactory, utils, BigNumber} = require('ethers')
-const WETH9 = require('../WETH9.json')
-const bn = require('bignumber.js')
-
-deploySepoliaUniswapV3()
-
-async function deploySepoliaUniswapV3() {
-  
-  const [owner, signer2] = await ethers.getSigners();
-  console.log(owner.address)
-  const provider = waffle.provider;
-  
-  // Factory = new ContractFactory(artifacts.UniswapV3Factory.abi,artifacts.UniswapV3Factory.bytecode,owner)
-  // factory = await Factory.deploy();
-  // console.log('Factory', factory.address)
-  
-  let factoryAddress = "0x4e172dbef259c46de56ef953f29215640a664b31"
-  let wethAddress = "0xc1202e7d42655F23097476f6D48006fE56d38d4f"
-  
-  // SwapRouter = new ContractFactory(artifacts.SwapRouter.abi,artifacts.SwapRouter.bytecode,owner)
-  // swapRouter = await SwapRouter.deploy(factoryAddress,wethAddress);
-  // console.log('SwapRouter', swapRouter.address)
-  
-  let swapRouterAddress = "0xEEf4f98dD12FcC6193cCCE792F3983803D0b56eD" 
-  
-  // NFTDescriptor = new ContractFactory(artifacts.NFTDescriptor.abi,artifacts.NFTDescriptor.bytecode,owner)
-  // nftDescriptor = await NFTDescriptor.deploy();
-  // console.log('NFTDescriptor', nftDescriptor.address)
-
-  let nftDescriptorAddress = "0xc26ea02fb53594952b64559278bD0622555584e4"
-  
-}
+const { Contract, ContractFactory, utils, BigNumber } = require("ethers")
+const WETH9 = require("../WETH9.json")
 
 const artifacts = {
   UniswapV3Factory: require("@uniswap/v3-core/artifacts/contracts/UniswapV3Factory.sol/UniswapV3Factory.json"),
@@ -42,4 +10,87 @@ const artifacts = {
   WETH9,
 };
 
-// const UniswapV3Pool = require("!!!!!")
+const linkLibraries = ({ bytecode, linkReferences }, libraries) => {
+  Object.keys(linkReferences).forEach((fileName) => {
+    Object.keys(linkReferences[fileName]).forEach((contractName) => {
+      if (!libraries.hasOwnProperty(contractName)) {
+        throw new Error(`Missing link library name ${contractName}`)
+      }
+      const address = utils
+        .getAddress(libraries[contractName])
+        .toLowerCase()
+        .slice(2)
+      linkReferences[fileName][contractName].forEach(
+        ({ start, length }) => {
+          const start2 = 2 + start * 2
+          const length2 = length * 2
+          bytecode = bytecode
+            .slice(0, start2)
+            .concat(address)
+            .concat(bytecode.slice(start2 + length2, bytecode.length))
+        }
+      )
+    })
+  })
+  return bytecode
+}
+
+async function main() {
+  const [owner] = await ethers.getSigners();
+
+  const wethAddress = "0x68dfec648830d2f6eD320c2623473D7bac6A9B60"
+
+  Factory = new ContractFactory(artifacts.UniswapV3Factory.abi, artifacts.UniswapV3Factory.bytecode, owner);
+  factory = await Factory.deploy();
+
+  SwapRouter = new ContractFactory(artifacts.SwapRouter.abi, artifacts.SwapRouter.bytecode, owner);
+  swapRouter = await SwapRouter.deploy(factory.address, wethAddress);
+
+  NFTDescriptor = new ContractFactory(artifacts.NFTDescriptor.abi, artifacts.NFTDescriptor.bytecode, owner);
+  nftDescriptor = await NFTDescriptor.deploy();
+
+  const linkedBytecode = linkLibraries(
+    {
+      bytecode: artifacts.NonfungibleTokenPositionDescriptor.bytecode,
+      linkReferences: {
+        "NFTDescriptor.sol": {
+          NFTDescriptor: [
+            {
+              length: 20,
+              start: 1261,
+            },
+          ],
+        },
+      },
+    },
+    {
+      NFTDescriptor: nftDescriptor.address,
+    }
+  );
+  
+  let bytesStringETH = "0x4d41544943000000000000000000000000000000000000000000000000000000"
+
+  NonfungibleTokenPositionDescriptor = new ContractFactory(artifacts.NonfungibleTokenPositionDescriptor.abi, linkedBytecode, owner);
+  nonfungibleTokenPositionDescriptor = await NonfungibleTokenPositionDescriptor.deploy(wethAddress); //MAKE SURE YOU HAVE THIS EXACTY LIBRARY VERSION INSTALLED WITH: " npm i @uniswap/v3-periphery@1.0."
+
+  NonfungiblePositionManager = new ContractFactory(artifacts.NonfungiblePositionManager.abi, artifacts.NonfungiblePositionManager.bytecode, owner);
+  nonfungiblePositionManager = await NonfungiblePositionManager.deploy(factory.address, wethAddress, nonfungibleTokenPositionDescriptor.address);
+
+  console.log('WETH_ADDRESS=', `'${wethAddress}'`)
+  console.log('FACTORY_ADDRESS=', `'${factory.address}'`)
+  console.log('SWAP_ROUTER_ADDRESS=', `'${swapRouter.address}'`)
+  console.log('NFT_DESCRIPTOR_ADDRESS=', `'${nftDescriptor.address}'`)
+  console.log('POSITION_DESCRIPTOR_ADDRESS=', `'${nonfungibleTokenPositionDescriptor.address}'`)
+  console.log('POSITION_MANAGER_ADDRESS=', `'${nonfungiblePositionManager.address}'`)
+}
+
+/*
+npx hardhat run --network localhost scripts/01_deployContracts.js
+*/
+
+main()
+  .then(() => process.exit(0))
+  .catch((error) => {
+    console.error(error);
+    process.exit(1);
+  });
