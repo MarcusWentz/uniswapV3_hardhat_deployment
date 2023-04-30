@@ -1,5 +1,5 @@
 // Token addresses
-LINK_ADDRESS= '0x779877A7B0D9E8603169DdbD7836e478b4624789'
+DAI_ADDRESS= '0x7AF17A48a6336F7dc1beF9D485139f7B6f4FB5C8'
 BAD_ADDRESS= '0x18e9437821bD2c69A5bCee1896eD18995E5a6A85'
 
 // Uniswap contract address
@@ -11,12 +11,12 @@ POSITION_DESCRIPTOR_ADDRESS= '0x0cD8A63A89E83B2A1A2D8d3166E37a7540DD8436'
 POSITION_MANAGER_ADDRESS= '0x49C389FacBd26764946a3d61cdfe5dB80F55A637'
 
 // Pool addresses
-BAD_LINK_500= '0xb436205147f6Ed754AF599bA248eD41daFA741E7'
+BAD_DAI_500= '0xfc4bc5160677513B7D306E5a5B81F9BcAA6fBd66'
 
 const artifacts = {
   NonfungiblePositionManager: require("@uniswap/v3-periphery/artifacts/contracts/NonfungiblePositionManager.sol/NonfungiblePositionManager.json"),
   Bad: require("../WETH9.json"),
-  Link: require("../WETH9.json"),
+  Dai: require("../WETH9.json"),
   UniswapV3Pool: require("@uniswap/v3-core/artifacts/contracts/UniswapV3Pool.sol/UniswapV3Pool.json"),
 };
 
@@ -46,21 +46,21 @@ async function main() {
   const provider = waffle.provider;
 
   const badContract = new Contract(BAD_ADDRESS,artifacts.Bad.abi,provider)
-  const usdcContract = new Contract(LINK_ADDRESS,artifacts.Link.abi,provider)
+  const usdcContract = new Contract(DAI_ADDRESS,artifacts.Dai.abi,provider)
 
   await badContract.connect(owner).approve(POSITION_MANAGER_ADDRESS, ethers.utils.parseEther('1000'))
   await usdcContract.connect(owner).approve(POSITION_MANAGER_ADDRESS, ethers.utils.parseEther('1000'))
 
-  const poolContract = new Contract(BAD_LINK_500, artifacts.UniswapV3Pool.abi, provider)
+  const poolContract = new Contract(BAD_DAI_500, artifacts.UniswapV3Pool.abi, provider)
 
   const poolData = await getPoolData(poolContract)
 
   const BadToken = new Token(31337, BAD_ADDRESS, 18, 'BAD', 'BulkAirDrop')
-  const LinkToken = new Token(31337, LINK_ADDRESS, 18, 'LINK', 'ChainLink Token')
+  const DaiToken = new Token(31337, DAI_ADDRESS, 18, 'DAI', 'DAI Token')
 
   const pool = new Pool(
     BadToken,
-    LinkToken,
+    DaiToken,
     poolData.fee,
     poolData.sqrtPriceX96.toString(),
     poolData.liquidity.toString(),
@@ -78,7 +78,7 @@ async function main() {
 
   params = {
     token0: BAD_ADDRESS,
-    token1: LINK_ADDRESS,
+    token1: DAI_ADDRESS,
     fee: poolData.fee,
     tickLower: nearestUsableTick(poolData.tick, poolData.tickSpacing) - poolData.tickSpacing * 2,
     tickUpper: nearestUsableTick(poolData.tick, poolData.tickSpacing) + poolData.tickSpacing * 2,

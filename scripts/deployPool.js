@@ -1,5 +1,5 @@
 // Token addresses
-LINK_ADDRESS= '0x779877A7B0D9E8603169DdbD7836e478b4624789'
+DAI_ADDRESS= '0x7AF17A48a6336F7dc1beF9D485139f7B6f4FB5C8'
 BAD_ADDRESS= '0x18e9437821bD2c69A5bCee1896eD18995E5a6A85'
 
 // Uniswap contract address
@@ -62,8 +62,8 @@ async function deployPool(token0, token1, fee, price) {
 
 
 async function main() {
-  const badLink500 = await deployPool(BAD_ADDRESS, LINK_ADDRESS, 500, encodePriceSqrt(1, 1))
-  console.log('BAD_LINK_500=', `'${badLink500}'`)
+  const badLink500 = await deployPool(BAD_ADDRESS, DAI_ADDRESS, 500, encodePriceSqrt(1, 1))
+  console.log('BAD_DAI_500=', `'${badLink500}'`)
 }
 
 /*
