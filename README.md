@@ -14,7 +14,7 @@ npx hardhat run --network sepolia scripts/deployPool.js
 ```
 :warning: Note: when deploying a pool with :warning:
 ```solidity
-nonfungiblePositionManager.createAndInitializePoolIfNecessary(token0,token1,fee,price)
+nonfungiblePositionManager.createAndInitializePoolIfNecessary(token0,token1,fee,sqrtPriceX96)
 ```
 the transaction will keep reverting, unless you switch the address input order to meet this condition
 ```solidity
