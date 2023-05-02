@@ -3,15 +3,26 @@
 Based on:
 https://www.youtube.com/watch?v=SeiaiiviEhM
 
-Deploy Start:
+## Deploy Start:
 ```shell
 npx hardhat run --network sepolia scripts/deployStart.js
 ```
-Deploy Pool:
+
+## Deploy Pool:
 ```shell
 npx hardhat run --network sepolia scripts/deployPool.js
 ```
-Pool Add Liquidity:
+:warning: Note: when deploying a pool with :warning:
+```solidity
+nonfungiblePositionManager.createAndInitializePoolIfNecessary(token1,token2,fee,price)
+```
+the transaction will keep reverting, unless you switch the address input order to meet this condition
+```solidity
+require(token0 < token1)
+``` 
+https://etherscan.io/address/0xc36442b4a4522e871399cd717abdd847ab11fe88#code#F15#L19
+
+## Add Liquidity To A Pool:
 ```shell
 npx hardhat run --network sepolia scripts/poolAddLiquidity.js
 ```
